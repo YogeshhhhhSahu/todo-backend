@@ -3,31 +3,54 @@ const Todo = require("../models/Todo");
 
 const router = express.Router();
 
-// Get all tasks
+// ✅ Get all todos
 router.get("/todos", async (req, res) => {
-  const todos = await Todo.find();
-  res.json(todos);
+    try {
+        const todos = await Todo.find();
+        res.json(todos);
+    } catch (err) {
+        res.status(500).json({ error: "Server Error" });
+    }
 });
 
-// Add a new task
+// ✅ Add a new todo
 router.post("/todos", async (req, res) => {
-  const newTodo = new Todo({ text: req.body.text });
-  await newTodo.save();
-  res.json(newTodo);
+    try {
+        const newTodo = new Todo({ text: req.body.text, completed: false });
+        await newTodo.save();
+        res.json(newTodo);
+    } catch (err) {
+        res.status(500).json({ error: "Error adding task" });
+    }
 });
 
-// Delete a task
+// ✅ Delete a todo
 router.delete("/todos/:id", async (req, res) => {
-  await Todo.findByIdAndDelete(req.params.id);
-  res.json({ message: "Task deleted" });
+    try {
+        const deletedTodo = await Todo.findByIdAndDelete(req.params.id);
+        if (!deletedTodo) {
+            return res.status(404).json({ error: "Todo not found" });
+        }
+        res.json({ message: "Todo deleted" });
+    } catch (err) {
+        res.status(500).json({ error: "Error deleting task" });
+    }
 });
 
-// Update task completion
+// ✅ Update todo completion
 router.put("/todos/:id", async (req, res) => {
-  const todo = await Todo.findById(req.params.id);
-  todo.completed = !todo.completed;
-  await todo.save();
-  res.json(todo);
+    try {
+        const todo = await Todo.findById(req.params.id);
+        if (!todo) {
+            return res.status(404).json({ error: "Todo not found" });
+        }
+        todo.completed = !todo.completed;
+        await todo.save();
+        res.json(todo);
+    } catch (err) {
+        res.status(500).json({ error: "Error updating task" });
+    }
 });
 
 module.exports = router;
+  
